@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>病嬌指數 × 傲嬌指數|LOVE LAB 屬性鑑定特輯</title>
+  <meta name="description" content="戀愛屬性鑑定特輯:500 題題庫,每回隨機抽出 15 題,鑑定你的病嬌指數與傲嬌指數。" />
+  <!-- 離線 favicon:inline SVG,不依賴外部資源 -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❀</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="theme-home">
+
+  <!-- 極淡漂浮符號背景(由 script.js 動態生成) -->
+  <div id="particles" aria-hidden="true"></div>
+
+  <!-- 直排側標(桌機限定,雜誌書腰感) -->
+  <span class="side-label" aria-hidden="true">恋愛属性鑑定――特別編集</span>
+
+  <!-- 刊頭 -->
+  <header class="masthead">
+    <span class="mast-left">LOVE LAB</span>
+    <span class="mast-center">戀愛屬性鑑定特輯</span>
+    <span class="mast-right" id="issue-date">VOL.01</span>
+  </header>
+
+  <main class="app">
+
+    <!-- ============ 封面(首頁) ============ -->
+    <section id="page-home" class="page active">
+      <div class="hero">
+        <p class="eyebrow">― 今月の特集 ―</p>
+        <h1 class="hero-title">
+          <span class="t-pink">病嬌指數</span>
+          <span class="hero-x">×</span>
+          <span class="t-orange">傲嬌指數</span>
+        </h1>
+        <p class="hero-lede">
+          兩大屬性,一次鑑定。收錄五百題題庫,<br class="pc-br" />
+          每回從中隨機抽出十五題——你永遠猜不到今天的考卷長什麼樣子。
+        </p>
+        <p class="hero-note">全齡向・娛樂保證・鑑定結果不外流</p>
+      </div>
+
+      <p class="toc-label">目次 <span class="toc-en">CONTENTS</span></p>
+      <div class="toc">
+        <button class="feature" type="button" data-test="yandere">
+          <span class="feature-no">特集 01</span>
+          <span class="feature-title">病嬌指數鑑定</span>
+          <span class="feature-desc">已讀不回三分鐘,內心已經上演一百集連續劇?本特輯溫柔剖析你藏不住的執著與小劇場。</span>
+          <span class="feature-cta">開始鑑定 <span class="arrow">→</span></span>
+        </button>
+        <button class="feature" type="button" data-test="tsundere">
+          <span class="feature-no">特集 02</span>
+          <span class="feature-title">傲嬌指數鑑定</span>
+          <span class="feature-desc">「才、才不是為了你!」說完自己先臉紅的節奏,你中了幾招?口是心非濃度精準測定。</span>
+          <span class="feature-cta">開始鑑定 <span class="arrow">→</span></span>
+        </button>
+      </div>
+
+      <ul class="specs">
+        <li><b>500</b><span>題題庫</span></li>
+        <li><b>15</b><span>題隨機出卷</span></li>
+        <li><b>4</b><span>分鐘完測</span></li>
+      </ul>
+    </section>
+
+    <!-- ============ 測驗頁 ============ -->
+    <section id="page-quiz" class="page">
+      <div class="quiz-top">
+        <button id="btn-back-home" class="btn-line" type="button">← 封面</button>
+        <span id="quiz-label" class="quiz-label"></span>
+      </div>
+
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+        <div id="progress-bar"></div>
+      </div>
+
+      <div id="question-area" class="question-area" aria-live="polite">
+        <p class="q-meta">
+          <span id="quiz-counter" class="q-counter"></span>
+          <span id="quiz-bank-note" class="q-bank-note"></span>
+        </p>
+        <h2 id="question-text" class="question-text"></h2>
+        <div id="options" class="options"></div>
+      </div>
+
+      <div class="quiz-foot">
+        <button id="btn-prev" class="btn-line" type="button">← 上一題</button>
+      </div>
+    </section>
+
+    <!-- ============ 結果頁 ============ -->
+    <section id="page-result" class="page">
+      <div class="result-wrap">
+        <p class="eyebrow" id="result-eyebrow"></p>
+        <p id="result-label" class="result-label"></p>
+
+        <!-- 鑑定數值:雜誌資訊圖風大字 + 刻度尺 -->
+        <div id="result-figure" class="result-figure">
+          <span id="result-percent" class="percent">0</span>
+          <span class="percent-unit">%</span>
+        </div>
+        <div class="scale" aria-hidden="true">
+          <div class="scale-track">
+            <div class="scale-ticks"></div>
+            <div id="scale-marker" class="scale-marker"></div>
+          </div>
+          <div class="scale-caption"><span>0</span><span>50</span><span>100</span></div>
+        </div>
+
+        <!-- 判定標籤 -->
+        <div id="result-stamp" class="verdict"><span id="result-level"></span></div>
+
+        <!-- 鑑定文專欄 -->
+        <article class="column">
+          <p class="column-title">鑑定文</p>
+          <div id="result-diagnosis" class="diagnosis"></div>
+          <p id="result-sample" class="sample-note"></p>
+        </article>
+
+        <div class="result-actions">
+          <button id="btn-retry" class="btn-solid" type="button">換一份考卷,重新鑑定</button>
+          <button id="btn-other" class="btn-line" type="button">測另一個特集</button>
+          <button id="btn-home" class="btn-line" type="button">回封面</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>本測驗為娛樂企劃,測出「病嬌殿堂級」也請放心——我們不會把鑑定書寄給你的暗戀對象。</p>
+    <p>等級與指數不代表任何醫學或心理診斷。LOVE LAB 編輯部 敬上</p>
+  </footer>
+
+  <noscript>
+    <p class="noscript-tip">這個鑑定需要啟用 JavaScript 才能進行喔!(請在瀏覽器設定中允許 JavaScript)</p>
+  </noscript>
+
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
