@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>病嬌指數 × 傲嬌指數|LOVE LAB 屬性鑑定特輯</title>
-  <meta name="description" content="戀愛屬性鑑定特輯:500 題題庫,每回隨機抽出 15 題,鑑定你的病嬌指數與傲嬌指數。" />
+  <title>屬性全鑑定|LOVE LAB 屬性鑑定特輯</title>
+  <meta name="description" content="LOVE LAB 屬性鑑定特輯:620 題題庫,每回隨機抽出 15 題。病嬌指數、傲嬌指數、家族控屬性(妹控/弟控/兄控/姐控/女兒控/兒子控)等娛樂鑑定,持續新增中。" />
   <!-- 離線 favicon:inline SVG,不依賴外部資源 -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❀</text></svg>" />
   <link rel="stylesheet" href="styles.css" />
@@ -31,12 +31,11 @@
       <div class="hero">
         <p class="eyebrow">― 今月の特集 ―</p>
         <h1 class="hero-title">
-          <span class="t-pink">病嬌指數</span>
-          <span class="hero-x">×</span>
-          <span class="t-orange">傲嬌指數</span>
+          屬性全鑑定
+          <span class="hero-sub-title">〜全屬性・娛樂鑑定企劃〜</span>
         </h1>
         <p class="hero-lede">
-          兩大屬性,一次鑑定。收錄五百題題庫,<br class="pc-br" />
+          本誌收錄六百二十題題庫,<br class="pc-br" />
           每回從中隨機抽出十五題——你永遠猜不到今天的考卷長什麼樣子。
         </p>
         <p class="hero-note">全齡向・娛樂保證・鑑定結果不外流</p>
@@ -50,16 +49,22 @@
           <span class="feature-desc">已讀不回三分鐘,內心已經上演一百集連續劇?本特輯溫柔剖析你藏不住的執著與小劇場。</span>
           <span class="feature-cta">開始鑑定 <span class="arrow">→</span></span>
         </button>
-        <button class="feature" type="button" data-test="tsundere">
+        <button class="feature feature-tsundere" type="button" data-test="tsundere">
           <span class="feature-no">特集 02</span>
           <span class="feature-title">傲嬌指數鑑定</span>
           <span class="feature-desc">「才、才不是為了你!」說完自己先臉紅的節奏,你中了幾招?口是心非濃度精準測定。</span>
           <span class="feature-cta">開始鑑定 <span class="arrow">→</span></span>
         </button>
+        <button class="feature feature-family" type="button" data-test="family">
+          <span class="feature-no">特集 03</span>
+          <span class="feature-title">家族控屬性鑑定</span>
+          <span class="feature-desc">你是妹妹的專屬守護者,還是女兒的黑卡持有者?妹控/弟控/兄控/姐控/女兒控/兒子控,六大家族控一次驗出你的真實身分。</span>
+          <span class="feature-cta">開始鑑定 <span class="arrow">→</span></span>
+        </button>
       </div>
 
       <ul class="specs">
-        <li><b>500</b><span>題題庫</span></li>
+        <li><b>620</b><span>題題庫</span></li>
         <li><b>15</b><span>題隨機出卷</span></li>
         <li><b>4</b><span>分鐘完測</span></li>
       </ul>
@@ -96,18 +101,22 @@
         <p class="eyebrow" id="result-eyebrow"></p>
         <p id="result-label" class="result-label"></p>
 
-        <!-- 鑑定數值:雜誌資訊圖風大字 + 刻度尺 -->
+        <!-- 鑑定數值(指數測驗):雜誌資訊圖風大字 + 刻度尺 -->
         <div id="result-figure" class="result-figure">
           <span id="result-percent" class="percent">0</span>
           <span class="percent-unit">%</span>
         </div>
-        <div class="scale" aria-hidden="true">
+        <div id="result-scale" class="scale" aria-hidden="true">
           <div class="scale-track">
             <div class="scale-ticks"></div>
             <div id="scale-marker" class="scale-marker"></div>
           </div>
           <div class="scale-caption"><span>0</span><span>50</span><span>100</span></div>
         </div>
+
+        <!-- 屬性判定(家族控測驗):大字屬性名 + 排行榜 -->
+        <div id="result-type" class="result-type" hidden></div>
+        <div id="result-ranking" class="ranking" hidden></div>
 
         <!-- 判定標籤 -->
         <div id="result-stamp" class="verdict"><span id="result-level"></span></div>

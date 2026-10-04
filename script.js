@@ -20,8 +20,9 @@ const LS_KEY = 'lovelab.recent.v1';
 const OPTION_LABELS = ['非常同意', '同意', '普通', '不同意', '非常不同意'];
 
 const TEST_META = {
-  yandere:  { name: '病嬌指數', no: '特集 01', glyph: '♥', theme: 'yandere' },
-  tsundere: { name: '傲嬌指數', no: '特集 02', glyph: '❀', theme: 'tsundere' },
+  yandere:  { name: '病嬌指數', no: '特集 01', glyph: '♥', theme: 'yandere', kind: 'index' },
+  tsundere: { name: '傲嬌指數', no: '特集 02', glyph: '❀', theme: 'tsundere', kind: 'index' },
+  family:   { name: '家族控屬性', no: '特集 03', glyph: '🏡', theme: 'family', kind: 'family' },
 };
 
 /* ---------- 等級設定(每個測驗 6 級,依 percent 由低到高,雜誌專欄口吻)---------- */
@@ -102,6 +103,35 @@ function loadBank() {
 }
 const BANK = loadBank();
 
+/* ---------- 家族控屬性(特集 03:情境題計點制,點數最高者為你的控)---------- */
+const FAMILY_TYPES = {
+  imo: {
+    name: '妹控', emoji: '🎀',
+    text: '判定出爐:你的妹力值滿點。妹妹的行李你會提、妹妹的零食你會買、妹妹提到的男生名字你會默默記進觀察名單——名正言順的理由永遠是「她還小」,雖然她可能已經出社會三年。本專欄溫馨提醒:妹妹總有一天會長大,但你的守護者席位永久有效,只是記得留一點空間給她飛。',
+  },
+  oto: {
+    name: '弟控', emoji: '🧢',
+    text: '你的弟弟雷達全年無休。嘴上說「那傢伙自己會想辦法」,便當卻永遠多做一份;他打輸球你比他本人還不甘心。這種「只准我念,不准別人欺負」的矛盾體質,正是弟控的經典證明。建議:偶爾讓他請你一杯飲料,你會發現被弟弟照顧的感覺意外地不錯。',
+  },
+  ani: {
+    name: '兄控', emoji: '🦸',
+    text: '在你心中,哥哥是自帶濾鏡的生物:小時候他是無所不能的英雄,長大後他是「雖然很廢、但只准我說」的獨家存在。你的手機相簿還存著他國中打球的照片,證據確鑿。本專欄判定:兄控濃度超標。建議直接說一次「其實還蠻可靠的」,你會看到他的尾巴當場翹起來。',
+  },
+  ane: {
+    name: '姐控', emoji: '👒',
+    text: '姐姐說的話是你的聖旨,雖然你嘴上絕對不承認。她隨口說這件外套好看,你下次就會買同款;她一句「不要感冒」,你能高興一整晚。這種「表面嫌嘮叨、內心當聖旨」的結構,是姐控的標準構造。偷偷告訴你:她其實全都知道,而且非常吃這一套。',
+  },
+  musume: {
+    name: '女兒控', emoji: '🧸',
+    text: '你的相簿八成是同一位小女孩,禮物預算表的分配永遠有神秘的傾斜,她一句「最喜歡你了」可以讓你原諒全世界。女兒控的愛像張無上限的黑卡,刷到破產也心甘情願。溫馨提醒:未來會有一個小夥子來分走這份特權,請從今天開始練習深呼吸。',
+  },
+  musuko: {
+    name: '兒子控', emoji: '⚾',
+    text: '嘴上是「男孩子放養就好」,行事曆卻誠實地圈著他每一場球賽;他不對你撒嬌,你反而偷偷失落。兒子控是一種安靜的症頭:愛得很深,但只敢用「喂,吃飯了」來表達。建議今天就把「做得不錯嘛」說出口,你會看到那小子假裝鎮定、耳朵卻紅掉的樣子。',
+  },
+};
+const FAMILY_TYPE_ORDER = ['imo', 'oto', 'ani', 'ane', 'musume', 'musuko'];
+
 /* ---------- 計分 ----------
    answers:與本場題目等長的陣列,元素為所選選項索引(0–4)
    每題得分 = (4 - 所選索引) / 4 × 100
@@ -168,12 +198,39 @@ function drawQuestions(testKey, n) {
   return shuffle(pool).slice(0, Math.min(n, bank.length));
 }
 
+/* ---------- 家族控計分 ----------
+   answers:本場所選選項索引;依各題 options[optIdx] 的屬性代碼累計點數
+   回傳 { scores, ranked }:ranked 為點數高→低的屬性列表(同點維持標準順序) */
+function calcFamilyScores(session, answers) {
+  const scores = {};
+  FAMILY_TYPE_ORDER.forEach((k) => { scores[k] = 0; });
+  answers.forEach((optIdx, qi) => {
+    const q = session[qi];
+    if (!q || !q.options[optIdx]) return;
+    const k = q.options[optIdx].k;
+    if (k in scores) scores[k] += 1;
+  });
+  const ranked = FAMILY_TYPE_ORDER
+    .map((k) => ({ key: k, count: scores[k] }))
+    .sort((a, b) => b.count - a.count); // 穩定排序,同點保持 FAMILY_TYPE_ORDER
+  return { scores, ranked };
+}
+
+/* 主屬性:點數最高者;平手時隨機取其一(娛樂效果) */
+function pickDominantType(ranked) {
+  const top = ranked[0].count;
+  const tied = ranked.filter((r) => r.count === top);
+  return tied[Math.floor(Math.random() * tied.length)].key;
+}
+
 /* ---------- 匯出(供 Node 單元測試使用;瀏覽器環境無作用)---------- */
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     OPTION_LABELS, TEST_META, LEVELS, BANK,
+    FAMILY_TYPES, FAMILY_TYPE_ORDER,
     QUIZ_LENGTH, RECENT_LIMIT, LS_KEY,
     calcPercent, getLevel, shuffle, getRecentIds, pushRecentIds, drawQuestions,
+    calcFamilyScores, pickDominantType,
   };
 }
 
@@ -198,8 +255,12 @@ if (typeof document !== 'undefined') {
 
   const resultEyebrow = $('#result-eyebrow');
   const resultLabel = $('#result-label');
+  const resultFigure = $('#result-figure');
   const resultPercent = $('#result-percent');
+  const resultScale = $('#result-scale');
   const scaleMarker = $('#scale-marker');
+  const resultType = $('#result-type');
+  const resultRanking = $('#result-ranking');
   const resultStamp = $('#result-stamp');
   const resultLevel = $('#result-level');
   const resultColumn = document.querySelector('.column');
@@ -217,6 +278,7 @@ if (typeof document !== 'undefined') {
     home:     ['♥', '❀', '♪', '✧'],
     yandere:  ['♥', '❀', '✧'],
     tsundere: ['❀', '♪', '✧'],
+    family:   ['❀', '♪', '✧', '🏡'],
   };
 
   function setTheme(theme) {
@@ -271,7 +333,11 @@ if (typeof document !== 'undefined') {
     questionText.textContent = state.session[state.index].text;
 
     optionsEl.innerHTML = '';
-    OPTION_LABELS.forEach((label, i) => {
+    // 指數測驗:固定五等同意度量表;家族控測驗:每題自帶 4 個情境選項
+    const labels = TEST_META[state.testKey].kind === 'family'
+      ? state.session[state.index].options.map((o) => o.t)
+      : OPTION_LABELS;
+    labels.forEach((label, i) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'option';
@@ -332,8 +398,6 @@ if (typeof document !== 'undefined') {
   /* ---------- 結果頁 ---------- */
   function showResult() {
     const meta = TEST_META[state.testKey];
-    const percent = calcPercent(state.answers);
-    const level = getLevel(state.testKey, percent);
 
     // 本場結束:記下出過的題目 id,之後的場次優先避開
     pushRecentIds(state.testKey, state.session.map((q) => q.id));
@@ -344,9 +408,27 @@ if (typeof document !== 'undefined') {
 
     setTheme(meta.theme);
     resultEyebrow.textContent = '― ' + meta.no + ' 鑑定結果 ―';
-    resultLabel.textContent = '你的' + meta.name + '為';
 
-    // 百分比數字歸零,準備跳動
+    // 雙模式:指數測驗(百分比+刻度尺+判定膠囊)/ 家族控(屬性大字+排行榜)
+    resultFigure.hidden = meta.kind === 'family';
+    resultScale.hidden = meta.kind === 'family';
+    resultStamp.hidden = meta.kind === 'family';
+    resultType.hidden = meta.kind !== 'family';
+    resultRanking.hidden = meta.kind !== 'family';
+
+    if (meta.kind === 'family') {
+      showFamilyResult(meta);
+    } else {
+      showIndexResult(meta);
+    }
+  }
+
+  /* 指數測驗結果(特集 01、02) */
+  function showIndexResult(meta) {
+    const percent = calcPercent(state.answers);
+    const level = getLevel(state.testKey, percent);
+
+    resultLabel.textContent = '你的' + meta.name + '為';
     resultPercent.textContent = '0';
 
     // 刻度尺指針:先瞬間歸零 → 強制重繪 → 再過渡到目標值
@@ -381,6 +463,68 @@ if (typeof document !== 'undefined') {
     }, 1300);
   }
 
+  /* 家族控測驗結果(特集 03):主屬性大字 + 六屬性排行榜 */
+  function showFamilyResult(meta) {
+    const { ranked } = calcFamilyScores(state.session, state.answers);
+    const dominantKey = pickDominantType(ranked);
+    const dominant = FAMILY_TYPES[dominantKey];
+
+    resultLabel.textContent = '你的隱藏屬性為';
+    resultType.textContent = dominant.name + ' ' + dominant.emoji;
+
+    // 排行榜:點數高→低;先寬度歸零,登場後再過渡到目標寬度(逐列遞延)
+    resultRanking.innerHTML = '';
+    const title = document.createElement('p');
+    title.className = 'ranking-title';
+    title.textContent = '屬性得分分布';
+    resultRanking.appendChild(title);
+
+    const rows = ranked.map(({ key, count }) => {
+      const row = document.createElement('div');
+      row.className = 'ranking-row';
+
+      const name = document.createElement('span');
+      name.className = 'r-name';
+      name.textContent = FAMILY_TYPES[key].name + ' ' + FAMILY_TYPES[key].emoji;
+
+      const track = document.createElement('span');
+      track.className = 'r-track';
+      const fill = document.createElement('span');
+      fill.className = 'r-fill';
+      track.appendChild(fill);
+
+      const cnt = document.createElement('span');
+      cnt.className = 'r-count';
+      cnt.textContent = count;
+
+      row.appendChild(name);
+      row.appendChild(track);
+      row.appendChild(cnt);
+      resultRanking.appendChild(row);
+      return { fill, count };
+    });
+
+    resultColumn.classList.remove('show');
+    resultDiagnosis.textContent = '';
+    resultSample.textContent = '';
+    void resultRanking.offsetWidth;
+
+    showPage('page-result');
+
+    requestAnimationFrame(() => {
+      rows.forEach(({ fill, count }, i) => {
+        fill.style.transitionDelay = (i * 90) + 'ms';
+        fill.style.width = (count / state.session.length) * 100 + '%';
+      });
+    });
+
+    columnTimer = setTimeout(() => {
+      resultDiagnosis.textContent = dominant.text;
+      resultSample.textContent = '本回樣本:' + state.session.length + ' 題(題庫總數 ' + BANK[state.testKey].length + ' 題・每回隨機出卷)';
+      resultColumn.classList.add('show');
+    }, 1100);
+  }
+
   /* 百分比數字 0 → target 跳動(easeOutCubic) */
   function animateCountUp(el, target, duration) {
     const start = performance.now();
@@ -398,6 +542,12 @@ if (typeof document !== 'undefined') {
     card.addEventListener('click', () => startTest(card.dataset.test));
   });
 
+  // 題庫防呆:快取新舊不一致等情況下,若某特集題庫缺漏則隱藏該卡片,避免按了壞掉
+  document.querySelectorAll('.feature').forEach((card) => {
+    const bank = BANK[card.dataset.test];
+    if (!bank || !bank.length) card.hidden = true;
+  });
+
   $('#btn-back-home').addEventListener('click', () => {
     setTheme('home');
     showPage('page-home');
@@ -408,7 +558,9 @@ if (typeof document !== 'undefined') {
   $('#btn-retry').addEventListener('click', () => startTest(state.testKey));
 
   $('#btn-other').addEventListener('click', () => {
-    startTest(state.testKey === 'yandere' ? 'tsundere' : 'yandere');
+    const order = ['yandere', 'tsundere', 'family'];
+    const next = order[(order.indexOf(state.testKey) + 1) % order.length];
+    startTest(next);
   });
 
   $('#btn-home').addEventListener('click', () => {
@@ -439,5 +591,7 @@ if (typeof document !== 'undefined') {
     drawQuestions,
     getRecentIds,
     pushRecentIds,
+    calcFamilyScores,
+    pickDominantType,
   };
 }
